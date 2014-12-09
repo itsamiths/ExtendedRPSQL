@@ -256,6 +256,10 @@ setMethod("dbWriteTable", "JDBCConnection", def=function(conn, name, value, over
   value$uniqueNotNullPkField <- 1:index +1 #uniqueNotNullPkField -> pk field in newly created table
   
   fts <- sapply(value, dbDataType, dbObj=conn)
+  
+  #add the schema name to table name
+  name <- paste("r_export.",name)
+  
   if (dbExistsTable(conn, name)) {
     if (overwrite) dbRemoveTable(conn, name)
     else if (!append) stop("Table `",name,"' already exists")
@@ -267,11 +271,11 @@ setMethod("dbWriteTable", "JDBCConnection", def=function(conn, name, value, over
     on.exit(.jcall(conn@jc, "V", "setAutoCommit", ac))
   }
   if (!append) {
-    ct <- paste("CREATE TABLE ",qname," (",fdef," CONSTRAINT pk PRIMARY KEY (uniqueNotNullPkField))",sep= '')
+    ct <- paste("CREATE TABLE ",qname," (",fdef," ,createddate date CONSTRAINT pk PRIMARY KEY (uniqueNotNullPkField))",sep= '')
     dbSendUpdate(conn, ct)
   }
   if (length(value[[1]])) {
-    inss <- paste("UPSERT INTO ",qname," VALUES(", paste(rep("?",length(value)),collapse=','),")",sep='')
+    inss <- paste("UPSERT INTO ",qname," VALUES(", paste(rep("?",length(value)),collapse=','),",current_date())",sep='')
     for (j in 1:length(value[[1]]))
       dbSendUpdate(conn, inss, list=as.list(value[j,]))
   }
