@@ -260,7 +260,7 @@ setMethod("dbWriteTable", "JDBCConnection", def=function(conn, name, value, over
   print(paste("provided table name ->", name))
   
   #add the schema name to table name
-  name <- paste("r_export.",name)
+  name <- paste("r_export.",name,,sep = "")
   print(paste("custom table name ->", name))
   
   if (dbExistsTable(conn, name)) {
