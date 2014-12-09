@@ -258,10 +258,10 @@ setMethod("dbWriteTable", "JDBCConnection", def=function(conn, name, value, over
   
   fts <- sapply(value, dbDataType, dbObj=conn)
   
-  print(paste("provided table name ->", name))
+  #print(paste("provided table name ->", name))
   
   #add the schema name to table name
-  qname <- paste("r_export.","\"",name,"\"",sep = "")
+  qname <- paste("r_export.",name,sep = "")
   print(paste("custom table name ->", qname))
   
   if (dbExistsTable(conn, qname)) {
@@ -276,7 +276,7 @@ setMethod("dbWriteTable", "JDBCConnection", def=function(conn, name, value, over
     on.exit(.jcall(conn@jc, "V", "setAutoCommit", ac))
   }
   if (!append) {
-    ct <- paste("CREATE TABLE ",qname," (",fdef," ,createddate date CONSTRAINT pk PRIMARY KEY (uniqueNotNullPkField))",sep= '')
+    ct <- paste("CREATE TABLE ",qname," (",fdef," ,metadata_created_date date CONSTRAINT pk PRIMARY KEY (uniqueNotNullPkField))",sep= '')
     ctResult <- dbSendUpdate(conn, ct)
 	if (is.jnull(ctResult))
 		print(paste("table created ->",qname))
