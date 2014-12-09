@@ -259,6 +259,7 @@ setMethod("dbWriteTable", "JDBCConnection", def=function(conn, name, value, over
   
   #add the schema name to table name
   name <- paste("r_export.",name)
+  print(paste("custom table name ->", name))
   
   if (dbExistsTable(conn, name)) {
     if (overwrite) dbRemoveTable(conn, name)
