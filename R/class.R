@@ -261,16 +261,16 @@ setMethod("dbWriteTable", "JDBCConnection", def=function(conn, name, value, over
   print(paste("provided table name ->", name))
   
   #add the schema name to table name
-  name <- paste("r_export.",name,sep = "")
-  print(paste("custom table name ->", name))
+  qname <- paste("r_export.","\"",name,"\"",sep = "")
+  print(paste("custom table name ->", qname))
   
-  if (dbExistsTable(conn, name)) {
-    if (overwrite) dbRemoveTable(conn, name)
-    else if (!append) stop("Table `",name,"' already exists")
-  } else if (append) stop("Cannot append to a non-existing table `",name,"'")
+  if (dbExistsTable(conn, qname)) {
+    if (overwrite) dbRemoveTable(conn, qname)
+    else if (!append) stop("Table `",qname,"' already exists")
+  } else if (append) stop("Cannot append to a non-existing table `",qname,"'")
   fdef <- paste(.sql.qescape(names(value), TRUE, conn@identifier.quote),fts,collapse=',')
-  qname <- .sql.qescape(name, TRUE, conn@identifier.quote)
-  print(paste("escaped table name ->", qname))
+  #qname <- .sql.qescape(name, TRUE, conn@identifier.quote)
+  
   if (ac) {
     .jcall(conn@jc, "V", "setAutoCommit", FALSE)
     on.exit(.jcall(conn@jc, "V", "setAutoCommit", ac))
