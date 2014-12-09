@@ -130,7 +130,8 @@ setMethod("dbSendUpdate",  signature(conn="JDBCConnection", statement="character
     .jcall(s, "I", "executeUpdate", as.character(statement)[1], check=FALSE)
   }
   x <- .jgetEx(TRUE)
-  if (!is.jnull(x)) stop("execute JDBC update query failed in dbSendUpdate (", .jcall(x, "S", "getMessage"),")")
+  if (!is.jnull(x)) 
+	stop("execute JDBC update query failed in dbSendUpdate (", .jcall(x, "S", "getMessage"),")")
 })
 
 setMethod("dbGetQuery", signature(conn="JDBCConnection", statement="character"),  def=function(conn, statement, ...) {
@@ -268,7 +269,8 @@ setMethod("dbWriteTable", "JDBCConnection", def=function(conn, name, value, over
     else if (!append) stop("Table `",name,"' already exists")
   } else if (append) stop("Cannot append to a non-existing table `",name,"'")
   fdef <- paste(.sql.qescape(names(value), TRUE, conn@identifier.quote),fts,collapse=',')
-  qname <- .sql.qescape(name, TRUE, conn@identifier.quote)
+  #qname <- .sql.qescape(name, TRUE, conn@identifier.quote)
+  qname <- paste("\"",name,"\"",sep = "")
   print(paste("escaped table name ->", qname))
   if (ac) {
     .jcall(conn@jc, "V", "setAutoCommit", FALSE)
@@ -276,7 +278,9 @@ setMethod("dbWriteTable", "JDBCConnection", def=function(conn, name, value, over
   }
   if (!append) {
     ct <- paste("CREATE TABLE ",qname," (",fdef," ,createddate date CONSTRAINT pk PRIMARY KEY (uniqueNotNullPkField))",sep= '')
-    dbSendUpdate(conn, ct)
+    ctResult <- dbSendUpdate(conn, ct)
+	if (is.jnull(ctResult))
+		print(paste("table created ->",qname))
   }
   if (length(value[[1]])) {
     inss <- paste("UPSERT INTO ",qname," VALUES(", paste(rep("?",length(value)),collapse=','),",current_date())",sep='')
